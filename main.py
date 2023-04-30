@@ -19,6 +19,7 @@ from media_manager import MediaManager
 # print(sheety_response.text)
 
 
-# create instance of MediaManager class
+# search for title ID
 media_manager = MediaManager()
-media_manager.search_title("Code Geass")
+id = media_manager.search_title("code geass")
+# data = media_manager.get_info(id)
