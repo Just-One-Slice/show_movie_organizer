@@ -21,23 +21,37 @@ class MediaManager:
             raw_data = response.json()["results"]
 
             # extract release dates of each dictionary
+            # TODO: create exception to skip empty releaseDate fields
             for row in raw_data:
                 try:
-                    new_date_str = int(row["releaseDate"].split(" ")[-1])
-                
+                    new_date_str = row["releaseDate"].split(" ")[-1]
+
                 # ignore empty strings
                 except ValueError:
                     print("invalid date")
 
                 else:
                     new_date = int(new_date_str)
-                    print(f"New Date: {new_date}")
 
                     #if new date is earlier, set as release date
                     if new_date < MediaManager.release_date:
                         MediaManager.release_date = new_date
+                    
+            print(MediaManager.release_date)
 
-                    print(f"Release Date: {MediaManager.release_date}")
+
+            # # return id of first dictionary with earlist release date
+            # for row in raw_data:
+            #     try: 
+            #         new_date_str = row["releaseDate"].split(" ")[-1]
+                
+            #     # ignore empty strings
+            #     except ValueError:
+            #         print("invalid date")
+
+            #     else:
+            #         if str(MediaManager.release_date) in row["releaseDate"]:
+            #             return row
 
         # if request is unsuccessful, print error message
         else:

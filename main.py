@@ -21,5 +21,5 @@ from media_manager import MediaManager
 
 # search for title ID
 media_manager = MediaManager()
-id = media_manager.search_title("code geass")
+id = media_manager.search_title("Demon Slayer")
 # data = media_manager.get_info(id)
