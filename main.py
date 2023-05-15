@@ -22,4 +22,6 @@ from media_manager import MediaManager
 # search for title ID
 media_manager = MediaManager()
 id = media_manager.search_title("Demon Slayer")
+movie_info = media_manager.get_info(id)
+print(movie_info.title)
 # data = media_manager.get_info(id)

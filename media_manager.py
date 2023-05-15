@@ -5,14 +5,15 @@ consumet_api_endpoint = "https://api.consumet.org/anime/gogoanime"
 
 
 class MediaManager:
-    # attributes
-    title = ""
-    format = ""
-    language = ""
-    release_date = 9999
-    rating = None
+    def __init__(self):
+        self.title = None
+        self.genres = None
+        self.episodes = None
+        self.status = None
+        self.release_date = 9999
+        self.id = None
 
-    # name search
+    # retrieves the id of the earliest release of a given search title
     def search_title(self, title):
         response = requests.get(url=f"{consumet_api_endpoint}/{title}")
 
@@ -22,6 +23,9 @@ class MediaManager:
 
             # extract release dates of each dictionary
             # TODO: create exception to skip empty releaseDate fields
+
+            earliest_movie = None
+            
             for row in raw_data:
                 try:
                     new_date_str = row["releaseDate"].split(" ")[-1]
@@ -36,22 +40,10 @@ class MediaManager:
                     #if new date is earlier, set as release date
                     if new_date < MediaManager.release_date:
                         MediaManager.release_date = new_date
-                    
-            print(MediaManager.release_date)
+                        earliest_movie = row
 
-
-            # # return id of first dictionary with earlist release date
-            # for row in raw_data:
-            #     try: 
-            #         new_date_str = row["releaseDate"].split(" ")[-1]
-                
-            #     # ignore empty strings
-            #     except ValueError:
-            #         print("invalid date")
-
-            #     else:
-            #         if str(MediaManager.release_date) in row["releaseDate"]:
-            #             return row
+            id = earliest_movie["id"]
+            return id
 
         # if request is unsuccessful, print error message
         else:
@@ -64,8 +56,11 @@ class MediaManager:
 
         if response.status_code >= 200 and response.status_code < 300:
             data = response.json()
-            print(json.dumps(data, indent=4))
-            return data
+
+            MediaManager.title = data["title"]
+            MediaManager.genres = data["genres"]
+            MediaManager.episodes = data["totalEpisodes"]
+            MediaManager.status = data["status"]
 
         else:
             print("Error.", response.text)
