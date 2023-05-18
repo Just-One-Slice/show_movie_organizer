@@ -21,7 +21,16 @@ from media_manager import MediaManager
 
 # search for title ID
 media_manager = MediaManager()
-id = media_manager.search_title("Demon Slayer")
-movie_info = media_manager.get_info(id)
-print(movie_info.title)
-# data = media_manager.get_info(id)
+title = input("Enter an anime series to search for: ")
+id = media_manager.search_title(title)
+
+# get info of ID
+media_manager.get_info(id)
+
+print(f"""
+Title: {media_manager.title}
+Genres: {media_manager.genres}
+Episodes: {media_manager.episodes}
+Status: {media_manager.status}
+Release Date: {media_manager.release_date}
+""")

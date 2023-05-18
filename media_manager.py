@@ -10,7 +10,7 @@ class MediaManager:
         self.genres = None
         self.episodes = None
         self.status = None
-        self.release_date = 9999
+        self.release_date = None
         self.id = None
 
     # retrieves the id of the earliest release of a given search title
@@ -25,7 +25,8 @@ class MediaManager:
             # TODO: create exception to skip empty releaseDate fields
 
             earliest_movie = None
-            
+            earliest_date = 9999
+
             for row in raw_data:
                 try:
                     new_date_str = row["releaseDate"].split(" ")[-1]
@@ -37,9 +38,9 @@ class MediaManager:
                 else:
                     new_date = int(new_date_str)
 
-                    #if new date is earlier, set as release date
-                    if new_date < MediaManager.release_date:
-                        MediaManager.release_date = new_date
+                    # if new date is earlier, set as release date
+                    if new_date < earliest_date:
+                        earliest_date = new_date
                         earliest_movie = row
 
             id = earliest_movie["id"]
@@ -49,18 +50,19 @@ class MediaManager:
         else:
             print("Error.", response.text)
 
-
     # request meta data about title
+
     def get_info(self, id):
         response = requests.get(f"{consumet_api_endpoint}/info/{id}")
 
         if response.status_code >= 200 and response.status_code < 300:
             data = response.json()
 
-            MediaManager.title = data["title"]
-            MediaManager.genres = data["genres"]
-            MediaManager.episodes = data["totalEpisodes"]
-            MediaManager.status = data["status"]
+            self.title = data["title"]
+            self.genres = data["genres"]
+            self.episodes = data["totalEpisodes"]
+            self.status = data["status"]
+            self.release_date = data["releaseDate"]
 
         else:
             print("Error.", response.text)
