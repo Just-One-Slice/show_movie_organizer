@@ -21,7 +21,9 @@ from media_manager import MediaManager
 
 # search for title ID
 media_manager = MediaManager()
-title = input("Enter an anime series to search for: ")
+title = "code geass"
+
+# TODO: merge get_info() method into search_title() so only one method call is needed
 id = media_manager.search_title(title)
 
 # get info of ID

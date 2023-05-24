@@ -5,6 +5,11 @@ consumet_api_endpoint = "https://api.consumet.org/anime/gogoanime"
 
 
 class MediaManager:
+    """
+    MediaManager searches for media id's and stores relevant media info as attributes.
+    Info is retrieved using the consumet API.
+    """
+
     def __init__(self):
         self.title = None
         self.genres = None
@@ -13,56 +18,55 @@ class MediaManager:
         self.release_date = None
         self.id = None
 
-    # retrieves the id of the earliest release of a given search title
     def search_title(self, title):
+        """
+        Retrieves the id of the earliest release of a given anime title.
+        Search titles can be given in English or Japanese, but will return as Japanese.
+        """
         response = requests.get(url=f"{consumet_api_endpoint}/{title}")
+        raw_data = response.json()["results"]
 
-        # if request is successful...
-        if response.status_code >= 200 and response.status_code < 300:
-            raw_data = response.json()["results"]
+        # if response is unsuccessful, return none
+        if response.status_code < 200 or response.status_code > 300:
+            print("***ERROR*** ", response.text)
+            return
 
-            # extract release dates of each dictionary
-            # TODO: create exception to skip empty releaseDate fields
+        # if no results returned, return none
+        if not raw_data:
+            print(f"No results for: {title}")
+            return
 
+        # if request is successful, extract release dates of each dictionary
+        else:
             earliest_movie = None
             earliest_date = 9999
 
             for row in raw_data:
-                try:
-                    new_date_str = row["releaseDate"].split(" ")[-1]
+                # if releaseDate field is empty, continue to next row
+                if row["releaseDate"] == "":
+                    continue
 
-                # ignore empty strings
-                except ValueError:
-                    print("invalid date")
+                # extract year as string
+                new_date_str = row["releaseDate"].split(":")[-1].strip()
+                new_date = int(new_date_str)
 
-                else:
-                    new_date = int(new_date_str)
-
-                    # if new date is earlier, set as release date
-                    if new_date < earliest_date:
-                        earliest_date = new_date
-                        earliest_movie = row
+                # if new date is earlier, set as release date
+                if new_date < earliest_date:
+                    earliest_date = new_date
+                    earliest_movie = row
 
             id = earliest_movie["id"]
             return id
 
-        # if request is unsuccessful, print error message
-        else:
-            print("Error.", response.text)
-
-    # request meta data about title
-
     def get_info(self, id):
+        """
+        Returns relevant info from a given anime id
+        """
         response = requests.get(f"{consumet_api_endpoint}/info/{id}")
+        data = response.json()
 
-        if response.status_code >= 200 and response.status_code < 300:
-            data = response.json()
-
-            self.title = data["title"]
-            self.genres = data["genres"]
-            self.episodes = data["totalEpisodes"]
-            self.status = data["status"]
-            self.release_date = data["releaseDate"]
-
-        else:
-            print("Error.", response.text)
+        self.title = data["title"]
+        self.genres = data["genres"]
+        self.episodes = data["totalEpisodes"]
+        self.status = data["status"]
+        self.release_date = data["releaseDate"]
