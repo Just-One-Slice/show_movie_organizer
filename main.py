@@ -19,15 +19,10 @@ from media_manager import MediaManager
 # print(sheety_response.text)
 
 
-# search for title ID
+# search for anime info
 media_manager = MediaManager()
-title = "code geass"
-
-# TODO: merge get_info() method into search_title() so only one method call is needed
-id = media_manager.search_title(title)
-
-# get info of ID
-media_manager.get_info(id)
+title = "Pokemon"
+media_manager.search_anime(title)
 
 print(f"""
 Title: {media_manager.title}

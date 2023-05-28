@@ -3,7 +3,7 @@ import json
 
 consumet_api_endpoint = "https://api.consumet.org/anime/gogoanime"
 
-title = "code geass"
+title = "Angel Beats"
 response = requests.get(url=f"{consumet_api_endpoint}/{title}")
 
 # if request is successful...

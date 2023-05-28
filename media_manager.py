@@ -18,7 +18,7 @@ class MediaManager:
         self.release_date = None
         self.id = None
 
-    def search_title(self, title):
+    def search_anime(self, title):
         """
         Retrieves the id of the earliest release of a given anime title.
         Search titles can be given in English or Japanese, but will return as Japanese.
@@ -33,7 +33,7 @@ class MediaManager:
 
         # if no results returned, return none
         if not raw_data:
-            print(f"No results for: {title}")
+            print(f"No results for: '{title}'")
             return
 
         # if request is successful, extract release dates of each dictionary
@@ -55,8 +55,9 @@ class MediaManager:
                     earliest_date = new_date
                     earliest_movie = row
 
+            # search id info and set media attributes
             id = earliest_movie["id"]
-            return id
+            self.get_info(id)
 
     def get_info(self, id):
         """
