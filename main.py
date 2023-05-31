@@ -7,7 +7,7 @@ from media_manager import MediaManager
 
 
 # # read titles from sheety
-# sheety_endpoint = "https://api.sheety.co/3d79b938ab89d5e0f4ee389d338c0bb6/mediaList/media"
+# sheety_endpoint = "https://api.sheety.co/3d79b938ab89d5e0f4ee389d338c0bb6/media_managerList/media_manager"
 
 # sheety_response = requests.get(
 #     url=sheety_endpoint
@@ -21,13 +21,15 @@ from media_manager import MediaManager
 
 # search for anime info
 media_manager = MediaManager()
-title = "Pokemon"
-media_manager.search_anime(title)
+title = "angel beats"
+media_manager.search_title(title)
 
 print(f"""
 Title: {media_manager.title}
+Type: {media_manager.media_type}
 Genres: {media_manager.genres}
-Episodes: {media_manager.episodes}
-Status: {media_manager.status}
 Release Date: {media_manager.release_date}
+Language: {media_manager.language}
+ID: {media_manager.id}
 """)
+

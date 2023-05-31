@@ -1,73 +1,54 @@
 import requests
 import json
 
-consumet_api_endpoint = "https://api.consumet.org/anime/gogoanime"
-
 
 class MediaManager:
     """
-    MediaManager searches for media id's and stores relevant media info as attributes.
+    MediaManager searches for media details and stores relevant info as attributes.
     Info is retrieved using the consumet API.
     """
 
     def __init__(self):
         self.title = None
+        self.media_type = None
         self.genres = None
-        self.episodes = None
-        self.status = None
         self.release_date = None
+        self.language = None
         self.id = None
 
-    def search_anime(self, title):
+    def search_title(self, title):
         """
-        Retrieves the id of the earliest release of a given anime title.
+        Retrieves info on the given title search and assigns them as instance attributes.
         Search titles can be given in English or Japanese, but will return as Japanese.
         """
-        response = requests.get(url=f"{consumet_api_endpoint}/{title}")
-        raw_data = response.json()["results"]
+
+        tmdb_endpoint = "https://api.themoviedb.org/3/search"
+        key = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjg3MWUyOGJiMWNlYjVkMTI5ZWUzMTI0MTVhNmVmNCIsInN1YiI6IjY0NzUwMjIyYmJjYWUwMDBhODU5NDA5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uebm45xswSNm_tBcPPqGyxkwkdoE6YQj2ilF4gj36Ek"
+
+        headers = {"accept": "application/json", "Authorization": key}
+
+        response = requests.get(url=f"{tmdb_endpoint}/multi?query={title}", headers=headers)
+        raw_data = response.json()
 
         # if response is unsuccessful, return none
         if response.status_code < 200 or response.status_code > 300:
             print("***ERROR*** ", response.text)
             return
 
-        # if no results returned, return none
-        if not raw_data:
+        # if results is empty, return none
+        if not raw_data["results"]:
             print(f"No results for: '{title}'")
             return
-
-        # if request is successful, extract release dates of each dictionary
+        
+        # set media details as attributes
         else:
-            earliest_movie = None
-            earliest_date = 9999
+            top_search = raw_data["results"][0]
+            
+            self.title = top_search["name"]
+            self.media_type = top_search["media_type"]
+            self.genres = top_search["genre_ids"]
+            self.release_date = top_search["first_air_date"]
+            self.language = top_search["original_language"]
+            self.id = top_search["id"]
 
-            for row in raw_data:
-                # if releaseDate field is empty, continue to next row
-                if row["releaseDate"] == "":
-                    continue
-
-                # extract year as string
-                new_date_str = row["releaseDate"].split(":")[-1].strip()
-                new_date = int(new_date_str)
-
-                # if new date is earlier, set as release date
-                if new_date < earliest_date:
-                    earliest_date = new_date
-                    earliest_movie = row
-
-            # search id info and set media attributes
-            id = earliest_movie["id"]
-            self.get_info(id)
-
-    def get_info(self, id):
-        """
-        Returns relevant info from a given anime id
-        """
-        response = requests.get(f"{consumet_api_endpoint}/info/{id}")
-        data = response.json()
-
-        self.title = data["title"]
-        self.genres = data["genres"]
-        self.episodes = data["totalEpisodes"]
-        self.status = data["status"]
-        self.release_date = data["releaseDate"]
+            
