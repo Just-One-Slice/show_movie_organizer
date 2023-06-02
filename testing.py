@@ -1,15 +1,19 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
 
-endpoint = "https://api.themoviedb.org/3/genre/movie/list"
-key = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjg3MWUyOGJiMWNlYjVkMTI5ZWUzMTI0MTVhNmVmNCIsInN1YiI6IjY0NzUwMjIyYmJjYWUwMDBhODU5NDA5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uebm45xswSNm_tBcPPqGyxkwkdoE6YQj2ilF4gj36Ek"
+endpoint = "https://api.themoviedb.org/3/configuration/languages"
+load_dotenv()
+key = os.environ.get("TMDB_TOKEN")
 
 headers = {"accept": "application/json",
            "Authorization": key}
 
 response = requests.get(url=f"{endpoint}", headers=headers)
 data = response.json()
-print(json.dumps(data, indent=4))
+print(data)
+
 
 # title = "Angel Beats"
 

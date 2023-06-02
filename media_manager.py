@@ -1,8 +1,12 @@
 import requests
+import os
+from dotenv import load_dotenv
 
 tmdb_endpoint = "https://api.themoviedb.org/3"
-key = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjg3MWUyOGJiMWNlYjVkMTI5ZWUzMTI0MTVhNmVmNCIsInN1YiI6IjY0NzUwMjIyYmJjYWUwMDBhODU5NDA5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uebm45xswSNm_tBcPPqGyxkwkdoE6YQj2ilF4gj36Ek"
 
+# load environmental variables
+load_dotenv()
+key = os.environ.get("TMDB_TOKEN")
 headers = {"accept": "application/json", "Authorization": key}
 
 class MediaManager:
@@ -56,9 +60,13 @@ class MediaManager:
                 self.release_date = top_search["release_date"]
 
             self.media_type = top_search["media_type"]
+
             genre_ids = top_search["genre_ids"]
             self.genres = self.translate_genre_ids(genre_ids)
-            self.language = top_search["original_language"]
+
+            language_id = top_search["original_language"]
+            self.language = self.translate_language_id(language_id)
+
             self.rating = top_search["vote_average"]
             self.id = top_search["id"]
             self.poster = f'https://image.tmdb.org/t/p/original{top_search["poster_path"]}'
@@ -85,6 +93,7 @@ class MediaManager:
 
         return genre_names
 
+
     def get_genre_dicts(self):
         """
         Retrieves a list of all unique id,name dictionaries for both movie and tv shows.
@@ -110,3 +119,16 @@ class MediaManager:
                 genre_ids.append(dict)
 
         return genre_ids
+    
+    
+    def translate_language_id(self, id):
+        """
+        Retrieves the english name of a given language id.
+        """
+
+        response = requests.get(url=f"{tmdb_endpoint}/configuration/languages", headers=headers)
+        language_dicts = response.json()
+
+        for dict in language_dicts:
+            if dict["iso_639_1"] == id:
+                return dict["english_name"]

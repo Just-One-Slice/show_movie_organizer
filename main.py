@@ -2,24 +2,12 @@
 # (ex. genre, release date, rating, language)
 
 from media_manager import MediaManager
-import json
 
-# # read titles from sheety
-# sheety_endpoint = "https://api.sheety.co/3d79b938ab89d5e0f4ee389d338c0bb6/media_managerList/media_manager"
-
-# sheety_response = requests.get(
-#     url=sheety_endpoint
-# )
-
-# data = sheety_response.json()
-
-# print(sheety_response.status_code)
-# print(sheety_response.text)
-
-
-# search for anime info
+# search for media info
 media_manager = MediaManager()
-title = "Grand Budapest Hotel"
+
+# NOTE: For non-Japanese foreign films, set the search title to the original language
+title = "킹덤"
 media_manager.search_title(title)
 
 print(f"""
