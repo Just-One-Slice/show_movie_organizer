@@ -1,6 +1,9 @@
 import requests
-import json
 
+tmdb_endpoint = "https://api.themoviedb.org/3"
+key = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjg3MWUyOGJiMWNlYjVkMTI5ZWUzMTI0MTVhNmVmNCIsInN1YiI6IjY0NzUwMjIyYmJjYWUwMDBhODU5NDA5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uebm45xswSNm_tBcPPqGyxkwkdoE6YQj2ilF4gj36Ek"
+
+headers = {"accept": "application/json", "Authorization": key}
 
 class MediaManager:
     """
@@ -14,7 +17,10 @@ class MediaManager:
         self.genres = None
         self.release_date = None
         self.language = None
+        self.rating = None
         self.id = None
+        self.poster = None
+
 
     def search_title(self, title):
         """
@@ -22,12 +28,8 @@ class MediaManager:
         Search titles can be given in English or Japanese, but will return as Japanese.
         """
 
-        tmdb_endpoint = "https://api.themoviedb.org/3/search"
-        key = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjg3MWUyOGJiMWNlYjVkMTI5ZWUzMTI0MTVhNmVmNCIsInN1YiI6IjY0NzUwMjIyYmJjYWUwMDBhODU5NDA5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uebm45xswSNm_tBcPPqGyxkwkdoE6YQj2ilF4gj36Ek"
-
-        headers = {"accept": "application/json", "Authorization": key}
-
-        response = requests.get(url=f"{tmdb_endpoint}/multi?query={title}", headers=headers)
+        response = requests.get(
+        url=f"{tmdb_endpoint}/search/multi?query={title}", headers=headers)
         raw_data = response.json()
 
         # if response is unsuccessful, return none
@@ -36,19 +38,75 @@ class MediaManager:
             return
 
         # if results is empty, return none
-        if not raw_data["results"]:
+        elif not raw_data["results"]:
             print(f"No results for: '{title}'")
             return
         
-        # set media details as attributes
+        # set media details as attributes, note that movies and tv series have different labels for title and release date
         else:
             top_search = raw_data["results"][0]
-            
-            self.title = top_search["name"]
-            self.media_type = top_search["media_type"]
-            self.genres = top_search["genre_ids"]
-            self.release_date = top_search["first_air_date"]
-            self.language = top_search["original_language"]
-            self.id = top_search["id"]
+            media_type = top_search["media_type"]
 
-            
+            if media_type == "tv":
+                self.title = top_search["name"]
+                self.release_date = top_search["first_air_date"]
+
+            elif media_type == "movie":
+                self.title = top_search["title"]
+                self.release_date = top_search["release_date"]
+
+            self.media_type = top_search["media_type"]
+            genre_ids = top_search["genre_ids"]
+            self.genres = self.translate_genre_ids(genre_ids)
+            self.language = top_search["original_language"]
+            self.rating = top_search["vote_average"]
+            self.id = top_search["id"]
+            self.poster = f'https://image.tmdb.org/t/p/original{top_search["poster_path"]}'
+
+
+    def translate_genre_ids(self, ids):
+        """
+        Takes a list of genre IDs and returns a list of readable genre names.
+        """
+        genre_dicts = self.get_genre_dicts()
+
+        # if no genre ids exist, return none
+        if ids == None:
+            return 
+        
+        # For each input id, loop through ref id dictionaries to find matching genre name
+        else:
+            genre_names = []
+            for id in ids:
+                for genre_dict in genre_dicts:
+                    if genre_dict["id"] == id:
+                        genre_name = genre_dict["name"]
+                        genre_names.append(genre_name)
+
+        return genre_names
+
+    def get_genre_dicts(self):
+        """
+        Retrieves a list of all unique id,name dictionaries for both movie and tv shows.
+        Uses the genre ID lists (movie, tv) from TMDB API.
+        """
+
+        # retrieve lgenre IDs from TMDB API and store as lists of dictionaries
+        movie_response = requests.get(url=f"{tmdb_endpoint}/genre/movie/list", headers=headers)
+        movie_ids = movie_response.json()["genres"]
+
+        tv_response = requests.get(url=f"{tmdb_endpoint}/genre/tv/list", headers=headers)
+        tv_ids = tv_response.json()["genres"]
+
+        # combine movie and tv ID dictionaries into single list
+        genre_ids = []
+
+        for dict in movie_ids:
+            if dict not in genre_ids:
+                genre_ids.append(dict)
+
+        for dict in tv_ids:
+            if dict not in genre_ids:
+                genre_ids.append(dict)
+
+        return genre_ids

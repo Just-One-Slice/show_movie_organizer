@@ -1,15 +1,14 @@
 import requests
 import json
 
-endpoint = "https://api.themoviedb.org/3/search/multi"
+endpoint = "https://api.themoviedb.org/3/genre/movie/list"
 key = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjg3MWUyOGJiMWNlYjVkMTI5ZWUzMTI0MTVhNmVmNCIsInN1YiI6IjY0NzUwMjIyYmJjYWUwMDBhODU5NDA5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.uebm45xswSNm_tBcPPqGyxkwkdoE6YQj2ilF4gj36Ek"
-title = "inception"
 
 headers = {"accept": "application/json",
            "Authorization": key}
 
-response = requests.get(url=f"{endpoint}?query={title}", headers=headers)
-data = response.json()["results"]
+response = requests.get(url=f"{endpoint}", headers=headers)
+data = response.json()
 print(json.dumps(data, indent=4))
 
 # title = "Angel Beats"
