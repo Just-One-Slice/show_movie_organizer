@@ -17,13 +17,14 @@ class MediaManager:
 
     def __init__(self):
         self.title = None
+        self.poster = None
         self.media_type = None
         self.genres = None
         self.release_date = None
         self.language = None
         self.rating = None
+        self.overview = None
         self.id = None
-        self.poster = None
 
 
     def search_title(self, title):
@@ -70,6 +71,7 @@ class MediaManager:
             self.rating = top_search["vote_average"]
             self.id = top_search["id"]
             self.poster = f'https://image.tmdb.org/t/p/original{top_search["poster_path"]}'
+            self.overview = top_search["overview"]
 
 
     def translate_genre_ids(self, ids):
