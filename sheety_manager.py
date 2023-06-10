@@ -8,8 +8,9 @@ from media_manager import MediaManager
 load_dotenv()
 sheety_endpoint = os.environ.get("SHEETY_ENDPOINT")
 sheety_token = os.environ.get("SHEETY_TOKEN")
-headers = {"Content-Type": "application/json", 
+headers = {"Content-Type": "application/json",
            "Authorization": sheety_token}
+
 
 class SheetyManager:
     """
@@ -26,23 +27,30 @@ class SheetyManager:
         """
 
         response = requests.get(url=sheety_endpoint, headers=headers)
-        data = response.json()["medias"]
 
-        # loop through all rows without posters
-        for row in data:
-            if row["poster"] == "":
-                # if alternate title exists, set as title
-                if row["alternateTitle"] != "":
-                    title = row["alternateTitle"]
-                # otherise use title
+        # return error if response is unsuccessful
+        if response.status_code < 200 or response.status_code > 300:
+            print(f"ERROR {response.status_code}. {response.text}")
+            return
+
+        else:
+            data = response.json()["medias"]
+
+            # loop through all rows without posters
+            for row in data:
+                if row["poster"] == "":
+                    # if alternate title exists, set as title
+                    if row["alternateTitle"] != "":
+                        title = row["alternateTitle"]
+                    # otherise use title
+                    else:
+                        title = row["title"]
+                    row_id = row["id"]
+                    self.edit_row(row_id, title)
+
                 else:
-                    title = row["title"]
-                row_id = row["id"]
-                self.edit_row(row_id, title)
+                    continue
 
-            else:
-                continue
-    
     def edit_row(self, row, title):
         """
         Sends a PUT request to edit a specific row within the sheet.
@@ -53,14 +61,13 @@ class SheetyManager:
         response = requests.put(url=f"{sheety_endpoint}/{row}",
                                 headers=headers,
                                 json=payload)
-        
+
         if response.status_code < 200 or response.status_code > 300:
             print("***ERROR*** ", response.text)
             return
-        
+
         else:
             print("PUT request successful. ", response.text)
-
 
     def create_payload(self, title):
         """
@@ -72,7 +79,7 @@ class SheetyManager:
 
         media_manager = MediaManager()
         media_manager.search_title(title)
-        
+
         # Structure JSON payload, convert values to str
         payload = {
             "media": {
