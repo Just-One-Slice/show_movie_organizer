@@ -71,7 +71,9 @@ class MediaManager:
             self.rating = top_search["vote_average"]
             self.id = top_search["id"]
             self.poster = f'https://image.tmdb.org/t/p/original{top_search["poster_path"]}'
-            self.overview = top_search["overview"]
+            
+            overview_str = top_search["overview"]
+            self.overview = self.remove_extra_spaces(overview_str)
 
 
     def translate_genre_ids(self, ids):
@@ -134,3 +136,11 @@ class MediaManager:
         for dict in language_dicts:
             if dict["iso_639_1"] == id:
                 return dict["english_name"]
+            
+    def remove_extra_spaces(self, string):
+        """
+        Removes all extra spaces in the media overview string
+        """
+        string_array = string.split()
+        clean_string = " ".join(string_array)
+        return clean_string
