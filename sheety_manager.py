@@ -85,6 +85,7 @@ class SheetyManager:
             "media": {
                 "title": f"{media_manager.title}",
                 "poster": f"{media_manager.poster}",
+                "link": f"{media_manager.link}",
                 "mediaType": f"{media_manager.media_type.capitalize()}",
                 "genre": f"{', '.join(media_manager.genres)}",
                 "releaseDate": f"{media_manager.release_date}",

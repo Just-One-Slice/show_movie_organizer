@@ -20,7 +20,7 @@ from sheety_manager import SheetyManager
 
 # returns media data for a given title
 media_manager = MediaManager()
-title = "Avatar: The Last Airbender"
+title = "spirited away"
 media_manager.search_title(title)
 
 print(f"""

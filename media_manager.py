@@ -9,6 +9,7 @@ load_dotenv()
 key = os.environ.get("TMDB_TOKEN")
 headers = {"accept": "application/json", "Authorization": key}
 
+
 class MediaManager:
     """
     MediaManager searches for media details and stores relevant info as attributes.
@@ -18,6 +19,7 @@ class MediaManager:
     def __init__(self):
         self.title = None
         self.poster = None
+        self.link = None
         self.media_type = None
         self.genres = None
         self.release_date = None
@@ -26,7 +28,6 @@ class MediaManager:
         self.overview = None
         self.id = None
 
-
     def search_title(self, title):
         """
         Retrieves info on the given title search and assigns them as instance attributes.
@@ -34,7 +35,7 @@ class MediaManager:
         """
 
         response = requests.get(
-        url=f"{tmdb_endpoint}/search/multi?query={title}", headers=headers)
+            url=f"{tmdb_endpoint}/search/multi?query={title}", headers=headers)
         raw_data = response.json()
 
         # if response is unsuccessful, return none
@@ -46,35 +47,41 @@ class MediaManager:
         elif not raw_data["results"]:
             print(f"No results for: '{title}'")
             return
-        
+
         # set media details as attributes, note that movies and tv series have different labels for title and release date
         else:
             top_search = raw_data["results"][0]
             media_type = top_search["media_type"]
+            self.id = top_search["id"]
+
+            language_id = top_search["original_language"]
+            self.language = self.translate_language_id(language_id)
 
             if media_type == "tv":
                 self.title = top_search["name"]
                 self.release_date = top_search["first_air_date"]
 
+                # embed vidsrc stream link (Only supports English media)
+                if self.language == "English":
+                    self.link = f"https://vidsrc.to/embed/tv/{self.id}"
+
             elif media_type == "movie":
                 self.title = top_search["title"]
                 self.release_date = top_search["release_date"]
+
+                if self.language == "English":
+                    self.link = f"https://vidsrc.to/embed/movie/{self.id}"
 
             self.media_type = top_search["media_type"]
 
             genre_ids = top_search["genre_ids"]
             self.genres = self.translate_genre_ids(genre_ids)
 
-            language_id = top_search["original_language"]
-            self.language = self.translate_language_id(language_id)
-
             self.rating = top_search["vote_average"]
-            self.id = top_search["id"]
             self.poster = f'https://image.tmdb.org/t/p/original{top_search["poster_path"]}'
-            
+
             overview_str = top_search["overview"]
             self.overview = self.remove_extra_spaces(overview_str)
-
 
     def translate_genre_ids(self, ids):
         """
@@ -84,8 +91,8 @@ class MediaManager:
 
         # if no genre ids exist, return none
         if ids == None:
-            return 
-        
+            return
+
         # For each input id, loop through ref id dictionaries to find matching genre name
         else:
             genre_names = []
@@ -97,7 +104,6 @@ class MediaManager:
 
         return genre_names
 
-
     def get_genre_dicts(self):
         """
         Retrieves a list of all unique id,name dictionaries for both movie and tv shows.
@@ -105,10 +111,12 @@ class MediaManager:
         """
 
         # retrieve lgenre IDs from TMDB API and store as lists of dictionaries
-        movie_response = requests.get(url=f"{tmdb_endpoint}/genre/movie/list", headers=headers)
+        movie_response = requests.get(
+            url=f"{tmdb_endpoint}/genre/movie/list", headers=headers)
         movie_ids = movie_response.json()["genres"]
 
-        tv_response = requests.get(url=f"{tmdb_endpoint}/genre/tv/list", headers=headers)
+        tv_response = requests.get(
+            url=f"{tmdb_endpoint}/genre/tv/list", headers=headers)
         tv_ids = tv_response.json()["genres"]
 
         # combine movie and tv ID dictionaries into single list
@@ -123,20 +131,20 @@ class MediaManager:
                 genre_ids.append(dict)
 
         return genre_ids
-    
-    
+
     def translate_language_id(self, id):
         """
         Retrieves the english name of a given language id.
         """
 
-        response = requests.get(url=f"{tmdb_endpoint}/configuration/languages", headers=headers)
+        response = requests.get(
+            url=f"{tmdb_endpoint}/configuration/languages", headers=headers)
         language_dicts = response.json()
 
         for dict in language_dicts:
             if dict["iso_639_1"] == id:
                 return dict["english_name"]
-            
+
     def remove_extra_spaces(self, string):
         """
         Removes all extra spaces in the media overview string
